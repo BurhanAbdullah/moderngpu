@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Fetch CUDA toolkit
@@ -24,10 +24,9 @@ jobs:
 
       - uses: actions/checkout@v6
 
-      # The Windows 2025 runner currently exposes Visual Studio 2026.
-      # Configure its MSVC environment explicitly before invoking CMake.
-      # Ninja is used so CMake does not enter Visual Studio CUDA-toolset
-      # discovery, while nvcc still uses MSVC cl.exe as its host compiler.
+      # CUDA 13.1 supports the Visual Studio 2022 host compiler. Initialize
+      # the runner's VS2022 environment explicitly and use Ninja so CMake
+      # does not perform Visual Studio CUDA-toolset discovery.
       - name: Configure and build with MSVC environment
         shell: pwsh
         run: |
@@ -37,4 +36,4 @@ jobs:
           $devCmd = Join-Path $vsPath 'Common7/Tools/VsDevCmd.bat'
           if (-not (Test-Path $devCmd)) { throw "VsDevCmd.bat not found: $devCmd" }
 
-          cmd /c "`"$devCmd`" -arch=x64 && where cl && where link && cmake -S `"${{ github.workspace }}`" -B `"${{ github.workspace }}/build`" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=`"%CUDA_PATH%\bin\nvcc.exe`" -DCMAKE_CUDA_HOST_COMPILER=cl.exe -DCMAKE_CUDA_ARCHITECTURES=75 -DMODERNGPU_CUDA_ARCHITECTURES=75 -DCMAKE_CUDA_FLAGS=--allow-unsupported-compiler -DMODERNGPU_BUILD_DEMO=OFF -DMODERNGPU_BUILD_TUTORIAL=OFF -DMODERNGPU_BUILD_TESTS=ON && cmake --build `"${{ github.workspace }}/build`" --parallel"
+          cmd /c "`"$devCmd`" -arch=x64 && where cl && where link && cmake -S `"${{ github.workspace }}`" -B `"${{ github.workspace }}/build`" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=`"%CUDA_PATH%\bin\nvcc.exe`" -DCMAKE_CUDA_HOST_COMPILER=cl.exe -DCMAKE_CUDA_ARCHITECTURES=75 -DMODERNGPU_CUDA_ARCHITECTURES=75 -DMODERNGPU_BUILD_DEMO=OFF -DMODERNGPU_BUILD_TUTORIAL=OFF -DMODERNGPU_BUILD_TESTS=ON && cmake --build `"${{ github.workspace }}/build`" --parallel"
