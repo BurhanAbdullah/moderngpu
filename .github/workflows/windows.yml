@@ -37,4 +37,4 @@ jobs:
           $devCmd = Join-Path $vsPath 'Common7/Tools/VsDevCmd.bat'
           if (-not (Test-Path $devCmd)) { throw "VsDevCmd.bat not found: $devCmd" }
 
-          cmd /c "`"$devCmd`" -arch=x64 && where cl && where link && cmake -S `"${{ github.workspace }}`" -B `"${{ github.workspace }}/build`" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=`"%CUDA_PATH%\bin\nvcc.exe`" -DCMAKE_CUDA_HOST_COMPILER=cl.exe -DCMAKE_CUDA_ARCHITECTURES=75 -DMODERNGPU_CUDA_ARCHITECTURES=75 -DMODERNGPU_BUILD_DEMO=OFF -DMODERNGPU_BUILD_TUTORIAL=OFF -DMODERNGPU_BUILD_TESTS=ON && cmake --build `"${{ github.workspace }}/build`" --parallel"
+          cmd /c "`"$devCmd`" -arch=x64 && where cl && where link && cmake -S `"${{ github.workspace }}`" -B `"${{ github.workspace }}/build`" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=`"%CUDA_PATH%\bin\nvcc.exe`" -DCMAKE_CUDA_HOST_COMPILER=cl.exe -DCMAKE_CUDA_ARCHITECTURES=75 -DMODERNGPU_CUDA_ARCHITECTURES=75 -DCMAKE_CUDA_FLAGS=--allow-unsupported-compiler -DMODERNGPU_BUILD_DEMO=OFF -DMODERNGPU_BUILD_TUTORIAL=OFF -DMODERNGPU_BUILD_TESTS=ON && cmake --build `"${{ github.workspace }}/build`" --parallel"
