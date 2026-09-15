@@ -10,6 +10,8 @@ jobs:
   configure-build:
     name: CMake configure / build
     runs-on: ubuntu-22.04
+    container:
+      image: nvidia/cuda:12.6.3-devel-ubuntu22.04
     strategy:
       fail-fast: false
       matrix:
@@ -25,23 +27,28 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y cmake ninja-build
 
       - name: Check CUDA toolchain
         run: |
           nvcc --version
 
       - name: Configure
+        env:
+          LIBRARY_PATH: /usr/local/cuda/lib64/stubs
         run: |
           cmake -S . -B build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DMODERNGPU_BUILD_DEMO=${{ matrix.demos }} \
             -DMODERNGPU_BUILD_TUTORIAL=${{ matrix.tutorials }} \
-            -DMODERNGPU_BUILD_TESTS=ON
+            -DMODERNGPU_BUILD_TESTS=ON \
+            -DMODERNGPU_CUDA_ARCHITECTURES=75
 
       - name: Build
+        env:
+          LIBRARY_PATH: /usr/local/cuda/lib64/stubs
         run: cmake --build build --parallel
 
       - name: Smoke test binaries
