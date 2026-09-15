@@ -24,21 +24,17 @@ jobs:
 
       - uses: actions/checkout@v6
 
-      # Use Ninja rather than the default Visual Studio generator.
-      # This avoids CMake's Visual Studio CUDA-toolset discovery path,
-      # which is not reliable on the current Windows runner image.
-      - name: Configure CMake
+      # The Windows 2025 runner currently exposes Visual Studio 2026.
+      # Configure its MSVC environment explicitly before invoking CMake.
+      # Ninja is used so CMake does not enter Visual Studio CUDA-toolset
+      # discovery, while nvcc still uses MSVC cl.exe as its host compiler.
+      - name: Configure and build with MSVC environment
         shell: pwsh
         run: |
-          cmake -S ${{ github.workspace }} -B ${{ github.workspace }}/build `
-            -G Ninja `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_CUDA_COMPILER="$env:CUDA_PATH/bin/nvcc.exe" `
-            -DCMAKE_CUDA_ARCHITECTURES=75 `
-            -DMODERNGPU_CUDA_ARCHITECTURES=75 `
-            -DMODERNGPU_BUILD_DEMO=OFF `
-            -DMODERNGPU_BUILD_TUTORIAL=OFF `
-            -DMODERNGPU_BUILD_TESTS=ON
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $vsPath = & $vswhere -latest -products * -property installationPath
+          if (-not $vsPath) { throw 'Visual Studio installation not found' }
+          $devCmd = Join-Path $vsPath 'Common7/Tools/VsDevCmd.bat'
+          if (-not (Test-Path $devCmd)) { throw "VsDevCmd.bat not found: $devCmd" }
 
-      - name: Build all applications
-        run: cmake --build ${{ github.workspace }}/build --parallel
+          cmd /c "`"$devCmd`" -arch=x64 && where cl && where link && cmake -S `"${{ github.workspace }}`" -B `"${{ github.workspace }}/build`" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_COMPILER=`"%CUDA_PATH%\bin\nvcc.exe`" -DCMAKE_CUDA_HOST_COMPILER=cl.exe -DCMAKE_CUDA_ARCHITECTURES=75 -DMODERNGPU_CUDA_ARCHITECTURES=75 -DMODERNGPU_BUILD_DEMO=OFF -DMODERNGPU_BUILD_TUTORIAL=OFF -DMODERNGPU_BUILD_TESTS=ON && cmake --build `"${{ github.workspace }}/build`" --parallel"
