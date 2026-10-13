@@ -88,8 +88,10 @@ if(MODERNGPU_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+# ModernGPU public headers include .hxx files, so install them alongside
+# .h/.hpp headers for downstream find_package() consumers.
 install(DIRECTORY ${MODERNGPU_SRC}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.hxx")
 install(TARGETS MODERNGPU EXPORT ModerngpuTargets)
 install(EXPORT ModerngpuTargets
     FILE ModerngpuTargets.cmake
