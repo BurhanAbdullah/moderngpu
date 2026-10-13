@@ -21,10 +21,6 @@ jobs:
         build_type: [Release, Debug]
         demos: [OFF, ON]
         tutorials: [OFF, ON]
-        exclude:
-          - build_type: Debug
-            demos: ON
-            tutorials: ON
     steps:
       - uses: actions/checkout@v4
 
@@ -54,7 +50,6 @@ jobs:
         run: cmake --build build --parallel
 
       - name: Verify test executables were produced
-        if: matrix.demos == 'OFF' && matrix.tutorials == 'OFF'
         shell: bash
         run: |
           set -euo pipefail
@@ -67,13 +62,11 @@ jobs:
           printf 'Built test executable: %s\n' "${test_bins[@]}"
 
       - name: Install package to staging prefix
-        if: matrix.build_type == 'Release' && matrix.demos == 'OFF' && matrix.tutorials == 'OFF'
         env:
           LIBRARY_PATH: /usr/local/cuda/lib64/stubs
         run: cmake --install build --prefix "${{ github.workspace }}/stage"
 
       - name: Configure and build external package consumer
-        if: matrix.build_type == 'Release' && matrix.demos == 'OFF' && matrix.tutorials == 'OFF'
         env:
           LIBRARY_PATH: /usr/local/cuda/lib64/stubs
           CMAKE_PREFIX_PATH: ${{ github.workspace }}/stage
@@ -93,7 +86,7 @@ jobs:
           int main() { return 0; }
           EOF
           cmake -S package-consumer -B package-consumer/build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_CUDA_ARCHITECTURES=75 \
             -DCMAKE_PREFIX_PATH="${{ github.workspace }}/stage"
           cmake --build package-consumer/build --parallel
