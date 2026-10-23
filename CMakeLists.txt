@@ -35,9 +35,9 @@ set(MODERNGPU_SRC ${PROJECT_SOURCE_DIR}/src)
 
 set(MODERNGPU_CUDA_ARCHITECTURES "60;61;70;75;80" CACHE STRING
     "CUDA architectures generated for moderngpu consumers")
-set(MODERNGPU_BUILD_DEMO ON CACHE BOOL "Build moderngpu demos")
-set(MODERNGPU_BUILD_TUTORIAL ON CACHE BOOL "Build moderngpu tutorials")
-set(MODERNGPU_BUILD_TESTS ON CACHE BOOL "Build moderngpu unit tests")
+option(MODERNGPU_BUILD_DEMO "Build moderngpu demos" ON)
+option(MODERNGPU_BUILD_TUTORIAL "Build moderngpu tutorials" ON)
+option(MODERNGPU_BUILD_TESTS "Build moderngpu unit tests" ON)
 
 set_target_properties(MODERNGPU
     PROPERTIES
